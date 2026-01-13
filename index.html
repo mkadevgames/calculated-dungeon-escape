@@ -5,235 +5,309 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculated Dungeon Escape</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=VT323&display=swap" rel="stylesheet">
+
 <style>
-body {
+  * {
     margin: 0;
-    font-family: "Trebuchet MS", Arial;
-    background: radial-gradient(circle at top, #1a1a1a, #000);
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-#game {
+  body {
+    min-height: 100dvh;
+    background: radial-gradient(circle at 30% 20%, #0f0c29, #302b63, #24243e);
+    font-family: 'Orbitron', sans-serif;
+    color: #e0f7ff;
+    overflow: hidden;
+    background-attachment: fixed;
+  }
+
+  #game-container {
+    position: relative;
     width: 100%;
-    max-width: 420px;
-    padding: 20px;
-    background: linear-gradient(180deg, #111, #000);
-    border-radius: 15px;
-    box-shadow: 0 0 25px #00ffcc55;
+    max-width: 460px;
+    margin: 1.5vh auto;
+    padding: 2.2rem 1.8rem;
+    background: rgba(12, 14, 35, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 255, 230, 0.18);
+    border-radius: 18px;
+    box-shadow: 
+      0 0 40px rgba(0, 255, 230, 0.15),
+      inset 0 0 25px rgba(0, 255, 230, 0.08);
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
     text-align: center;
-}
+    background: linear-gradient(90deg, #00ffea, #ff00ea, #00ffea);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 20px rgba(0, 255, 234, 0.7);
+    letter-spacing: 2px;
+    margin-bottom: 0.6rem;
+    animation: glow 3s ease-in-out infinite alternate;
+  }
 
-h1 {
-    color: #00ffcc;
-    text-shadow: 0 0 10px #00ffcc;
-}
+  .subtitle {
+    text-align: center;
+    color: #a0f0ff;
+    opacity: 0.75;
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 2rem;
+  }
 
-.subtitle {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-button {
+  button {
     width: 100%;
-    background: linear-gradient(180deg, #222, #000);
-    color: white;
-    border: 2px solid #00ffcc;
-    padding: 14px;
-    margin: 8px 0;
-    font-size: 16px;
-    border-radius: 10px;
+    padding: 1.1rem;
+    margin: 0.7rem 0;
+    font-family: 'VT323', monospace;
+    font-size: 1.35rem;
+    color: #e0ffff;
+    background: linear-gradient(180deg, rgba(0,40,60,0.6), rgba(0,20,40,0.8));
+    border: 2px solid #00ffe6;
+    border-radius: 12px;
     cursor: pointer;
-    transition: 0.2s;
-}
+    transition: all 0.25s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 230, 0.2);
+    letter-spacing: 1px;
+  }
 
-button:hover {
-    background: #00ffcc;
-    color: black;
-    transform: scale(1.05);
-}
+  button:hover {
+    transform: translateY(-3px) scale(1.03);
+    background: linear-gradient(180deg, #00ffe6, #00c8b5);
+    color: #000814;
+    box-shadow: 0 0 35px rgba(0, 255, 230, 0.65);
+  }
 
-#doors {
-    display: grid;
-    gap: 10px;
-    margin-top: 15px;
-}
+  #hud {
+    display: none;
+  }
 
-.door {
-    background: linear-gradient(180deg, #1b1b1b, #000);
-    font-size: 18px;
-}
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'VT323', monospace;
+    font-size: 1.4rem;
+    color: #80ffea;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 0 10px #00ffe6;
+  }
 
-.info {
-    margin-top: 8px;
-    font-size: 14px;
-}
-
-#hint {
-    margin-top: 10px;
+  #hint {
+    text-align: center;
+    font-size: 1.5rem;
     color: #ffd700;
-    font-weight: bold;
-}
+    margin: 1rem 0 1.8rem;
+    text-shadow: 0 0 12px #ffcc00;
+    letter-spacing: 1.5px;
+    min-height: 2.4rem;
+  }
 
-footer {
-    margin-top: 15px;
-    font-size: 11px;
+  #doors {
+    display: grid;
+    gap: 14px;
+  }
+
+  .door {
+    font-size: 1.9rem;
+    padding: 1.4rem 1rem;
+    background: rgba(8, 25, 45, 0.7);
+    border: 2px solid #444;
+    border-radius: 14px;
+    transition: all 0.3s;
+  }
+
+  .door:hover {
+    border-color: #00ffe6;
+    background: rgba(0, 80, 100, 0.35);
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(0, 255, 230, 0.4);
+  }
+
+  #gameover, #win {
+    display: none;
+    text-align: center;
+  }
+
+  #gameover h1, #win h1 {
+    font-size: 3.2rem;
+    margin: 1rem 0;
+  }
+
+  #gameover h1 { color: #ff3366; }
+  #win h1    { color: #00ff9d; }
+
+  .final-msg {
+    font-size: 1.5rem;
+    margin: 1.5rem 0;
+    color: #a0f0ff;
+  }
+
+  /* Animação glow do título */
+  @keyframes glow {
+    from { text-shadow: 0 0 10px #00ffea66; }
+    to   { text-shadow: 0 0 35px #00ffea, 0 0 60px #00ffea66; }
+  }
+
+  footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #88ccff;
     opacity: 0.6;
-}
+  }
 </style>
 </head>
-
 <body>
 
-<div id="game">
+<div id="game-container">
 
-    <div id="menu">
-        <h1>Calculated Dungeon Escape</h1>
-        <p class="subtitle">Escolha a dificuldade e escape usando a mente</p>
-        <button onclick="startGame('facil')">Fácil – 2 Portas</button>
-        <button onclick="startGame('medio')">Médio – 3 Portas</button>
-        <button onclick="startGame('dificil')">Difícil – 4 Portas</button>
-        <footer>Jogo feito por Marko</footer>
+  <div id="menu">
+    <h1>CALCULATED<br>DUNGEON ESCAPE</h1>
+    <p class="subtitle">ESCAPE USANDO APENAS SUA MENTE</p>
+
+    <button onclick="startGame('facil')">FÁCIL – 2 PORTAS</button>
+    <button onclick="startGame('medio')">MÉDIO – 3 PORTAS</button>
+    <button onclick="startGame('dificil')">DIFÍCIL – 4 PORTAS</button>
+  </div>
+
+  <div id="hud">
+    <div class="stats">
+      <span>⏱ <span id="time">0</span>s</span>
+      <span>⭐ <span id="score">0</span></span>
     </div>
 
-    <div id="hud" style="display:none">
-        <div class="info">⏱ Tempo: <span id="time">0</span>s | ⭐ Pontos: <span id="score">0</span></div>
-        <div id="hint"></div>
-        <div id="doors"></div>
-    </div>
+    <div id="hint"></div>
+    <div id="doors"></div>
+  </div>
 
-    <div id="gameover" style="display:none">
-        <h1>💀 Game Over</h1>
-        <p>Você escolheu a porta errada</p>
-        <p>Pontuação: <span id="finalScore"></span></p>
-        <button onclick="restart()">Voltar ao início</button>
-    </div>
+  <div id="gameover">
+    <h1>💀 GAME OVER</h1>
+    <p class="final-msg">Você escolheu a porta errada...</p>
+    <p>Pontuação final: <strong><span id="finalScore">0</span></strong></p>
+    <button onclick="restart()">TENTAR NOVAMENTE</button>
+  </div>
 
-    <div id="win" style="display:none">
-        <h1>🏆 Você escapou!</h1>
-        <p>Pontuação final: <span id="winScore"></span></p>
-        <button onclick="restart()">Jogar novamente</button>
-    </div>
+  <div id="win">
+    <h1>🏆 LIBERDADE!</h1>
+    <p class="final-msg">Você escapou da masmorra!</p>
+    <p>Pontuação: <strong><span id="winScore">0</span></strong></p>
+    <button onclick="restart()">JOGAR NOVAMENTE</button>
+  </div>
 
+  <footer>v1.1 • por Marko</footer>
 </div>
+
+<!-- Áudio -->
+<audio id="bgm" loop volume="0.25">
+  <source src="https://cdn.pixabay.com/audio/2023/08/07/audio_3d4b6d7e8f.mp3" type="audio/mpeg">
+  <!-- Cyberpunk / dark synthwave royalty free vibe -->
+</audio>
 
 <audio id="click" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2b4b9fa88f.mp3"></audio>
 <audio id="correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9dcb9f3db5.mp3"></audio>
 <audio id="wrong" src="https://cdn.pixabay.com/audio/2022/03/10/audio_7e1b2b6f6f.mp3"></audio>
-<audio id="gameoverSound" src="https://cdn.pixabay.com/audio/2022/03/23/audio_48f5f02b7d.mp3"></audio>
 <audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/23/audio_7b45d7b45b.mp3"></audio>
 
 <script>
-let doorsCount
-let goal
-let passed = 0
-let score = 0
-let time = 0
-let timer
+let doorsCount, goal, passed = 0, score = 0, time = 0, timer
+const bgm = document.getElementById("bgm")
 
 function startGame(diff) {
-    document.getElementById("click").play()
-    document.getElementById("menu").style.display = "none"
-    document.getElementById("hud").style.display = "block"
+  document.getElementById("click").play()
+  bgm.play().catch(()=>{}) // autoplay pode ser bloqueado, mas tentamos
 
-    if (diff === "facil") {
-        doorsCount = 2
-        goal = 10
-    }
-    if (diff === "medio") {
-        doorsCount = 3
-        goal = 20
-    }
-    if (diff === "dificil") {
-        doorsCount = 4
-        goal = 30
-    }
+  document.getElementById("menu").style.display = "none"
+  document.getElementById("hud").style.display = "block"
 
-    timer = setInterval(() => {
-        time++
-        document.getElementById("time").innerText = time
-    }, 1000)
+  if (diff === "facil")    { doorsCount = 2; goal = 10 }
+  if (diff === "medio")    { doorsCount = 3; goal = 20 }
+  if (diff === "dificil")  { doorsCount = 4; goal = 30 }
 
-    nextRound()
+  timer = setInterval(() => {
+    time++
+    document.getElementById("time").innerText = time
+  }, 1000)
+
+  nextRound()
 }
 
 function randomCalc() {
-    let a = Math.floor(Math.random() * 15) + 1
-    let b = Math.floor(Math.random() * 15) + 1
-    let ops = ["+", "-", "*"]
-    let op = ops[Math.floor(Math.random() * ops.length)]
-    let text = a + " " + op + " " + b
-    let value = eval(text)
-    return { text, value }
+  let a = Math.floor(Math.random() * 17) + 1
+  let b = Math.floor(Math.random() * 17) + 1
+  let ops = ["+", "-", "*"]
+  let op = ops[Math.floor(Math.random() * ops.length)]
+  let text = `${a} ${op} ${b}`
+  return { text, value: eval(text) }
 }
 
 function nextRound() {
-    document.getElementById("doors").innerHTML = ""
-    let calcs = []
+  document.getElementById("doors").innerHTML = ""
 
-    for (let i = 0; i < doorsCount; i++) {
-        calcs.push(randomCalc())
-    }
+  let calcs = Array.from({length: doorsCount}, randomCalc)
+  let type = Math.random() > 0.5 ? "MAIOR" : "MENOR"
+  document.getElementById("hint").innerText = `Escolha a expressão com o valor ${type}`
 
-    let type = Math.random() > 0.5 ? "MAIOR" : "MENOR"
-    document.getElementById("hint").innerText = "Escolha a porta com o valor " + type
+  let correctValue = calcs.reduce((prev, curr) => 
+    type === "MAIOR" ? Math.max(prev, curr.value) : Math.min(prev, curr.value)
+  , calcs[0].value)
 
-    let correctValue = calcs[0].value
-    calcs.forEach(c => {
-        if (type === "MAIOR" && c.value > correctValue) correctValue = c.value
-        if (type === "MENOR" && c.value < correctValue) correctValue = c.value
-    })
-
-    calcs.forEach(c => {
-        let btn = document.createElement("button")
-        btn.className = "door"
-        btn.innerText = c.text
-        btn.onclick = () => chooseDoor(c.value === correctValue)
-        document.getElementById("doors").appendChild(btn)
-    })
+  calcs.forEach(({text, value}) => {
+    const btn = document.createElement("button")
+    btn.className = "door"
+    btn.textContent = text
+    btn.onclick = () => chooseDoor(value === correctValue)
+    document.getElementById("doors").appendChild(btn)
+  })
 }
 
 function chooseDoor(correct) {
-    if (correct) {
-        document.getElementById("correct").play()
-        score += 10
-        passed++
-        document.getElementById("score").innerText = score
+  if (correct) {
+    document.getElementById("correct").play()
+    score += 10
+    passed++
+    document.getElementById("score").innerText = score
 
-        if (passed >= goal) {
-            winGame()
-        } else {
-            nextRound()
-        }
-    } else {
-        gameOver()
-    }
+    if (passed >= goal) winGame()
+    else nextRound()
+  } else {
+    gameOver()
+  }
 }
 
 function gameOver() {
-    clearInterval(timer)
-    document.getElementById("wrong").play()
-    document.getElementById("gameoverSound").play()
-    document.getElementById("hud").style.display = "none"
-    document.getElementById("gameover").style.display = "block"
-    document.getElementById("finalScore").innerText = score
+  clearInterval(timer)
+  document.getElementById("wrong").play()
+  document.getElementById("hud").style.display = "none"
+  document.getElementById("gameover").style.display = "block"
+  document.getElementById("finalScore").innerText = score
+  bgm.pause()
 }
 
 function winGame() {
-    clearInterval(timer)
-    document.getElementById("winSound").play()
-    document.getElementById("hud").style.display = "none"
-    document.getElementById("win").style.display = "block"
-    document.getElementById("winScore").innerText = score + " em " + time + "s"
+  clearInterval(timer)
+  document.getElementById("winSound").play()
+  document.getElementById("hud").style.display = "none"
+  document.getElementById("win").style.display = "block"
+  document.getElementById("winScore").innerText = `${score} pts em ${time}s`
+  bgm.pause()
 }
 
 function restart() {
-    location.reload()
+  location.reload()
 }
-</script>
 
+// Tentar iniciar música de fundo ao interagir com a página (por causa das políticas de autoplay)
+document.addEventListener('click', () => bgm.play().catch(()=>{}), {once: true})
+</script>
 </body>
 </html>
