@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculated Dungeon Escape</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Trebuchet MS", Arial;
+    background: radial-gradient(circle at top, #1a1a1a, #000);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    background: linear-gradient(180deg, #111, #000);
+    border-radius: 15px;
+    box-shadow: 0 0 25px #00ffcc55;
+    text-align: center;
+}
+
+h1 {
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ffcc;
+}
+
+.subtitle {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(180deg, #222, #000);
+    color: white;
+    border: 2px solid #00ffcc;
+    padding: 14px;
+    margin: 8px 0;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #00ffcc;
+    color: black;
+    transform: scale(1.05);
+}
+
+#doors {
+    display: grid;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.door {
+    background: linear-gradient(180deg, #1b1b1b, #000);
+    font-size: 18px;
+}
+
+.info {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+#hint {
+    margin-top: 10px;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+footer {
+    margin-top: 15px;
+    font-size: 11px;
+    opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="menu">
+        <h1>Calculated Dungeon Escape</h1>
+        <p class="subtitle">Escolha a dificuldade e escape usando a mente</p>
+        <button onclick="startGame('facil')">Fácil – 2 Portas</button>
+        <button onclick="startGame('medio')">Médio – 3 Portas</button>
+        <button onclick="startGame('dificil')">Difícil – 4 Portas</button>
+        <footer>Jogo feito por Marko</footer>
+    </div>
+
+    <div id="hud" style="display:none">
+        <div class="info">⏱ Tempo: <span id="time">0</span>s | ⭐ Pontos: <span id="score">0</span></div>
+        <div id="hint"></div>
+        <div id="doors"></div>
+    </div>
+
+    <div id="gameover" style="display:none">
+        <h1>💀 Game Over</h1>
+        <p>Você escolheu a porta errada</p>
+        <p>Pontuação: <span id="finalScore"></span></p>
+        <button onclick="restart()">Voltar ao início</button>
+    </div>
+
+    <div id="win" style="display:none">
+        <h1>🏆 Você escapou!</h1>
+        <p>Pontuação final: <span id="winScore"></span></p>
+        <button onclick="restart()">Jogar novamente</button>
+    </div>
+
+</div>
+
+<audio id="click" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2b4b9fa88f.mp3"></audio>
+<audio id="correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9dcb9f3db5.mp3"></audio>
+<audio id="wrong" src="https://cdn.pixabay.com/audio/2022/03/10/audio_7e1b2b6f6f.mp3"></audio>
+<audio id="gameoverSound" src="https://cdn.pixabay.com/audio/2022/03/23/audio_48f5f02b7d.mp3"></audio>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/23/audio_7b45d7b45b.mp3"></audio>
+
+<script>
+let doorsCount
+let goal
+let passed = 0
+let score = 0
+let time = 0
+let timer
+
+function startGame(diff) {
+    document.getElementById("click").play()
+    document.getElementById("menu").style.display = "none"
+    document.getElementById("hud").style.display = "block"
+
+    if (diff === "facil") {
+        doorsCount = 2
+        goal = 10
+    }
+    if (diff === "medio") {
+        doorsCount = 3
+        goal = 20
+    }
+    if (diff === "dificil") {
+        doorsCount = 4
+        goal = 30
+    }
+
+    timer = setInterval(() => {
+        time++
+        document.getElementById("time").innerText = time
+    }, 1000)
+
+    nextRound()
+}
+
+function randomCalc() {
+    let a = Math.floor(Math.random() * 15) + 1
+    let b = Math.floor(Math.random() * 15) + 1
+    let ops = ["+", "-", "*"]
+    let op = ops[Math.floor(Math.random() * ops.length)]
+    let text = a + " " + op + " " + b
+    let value = eval(text)
+    return { text, value }
+}
+
+function nextRound() {
+    document.getElementById("doors").innerHTML = ""
+    let calcs = []
+
+    for (let i = 0; i < doorsCount; i++) {
+        calcs.push(randomCalc())
+    }
+
+    let type = Math.random() > 0.5 ? "MAIOR" : "MENOR"
+    document.getElementById("hint").innerText = "Escolha a porta com o valor " + type
+
+    let correctValue = calcs[0].value
+    calcs.forEach(c => {
+        if (type === "MAIOR" && c.value > correctValue) correctValue = c.value
+        if (type === "MENOR" && c.value < correctValue) correctValue = c.value
+    })
+
+    calcs.forEach(c => {
+        let btn = document.createElement("button")
+        btn.className = "door"
+        btn.innerText = c.text
+        btn.onclick = () => chooseDoor(c.value === correctValue)
+        document.getElementById("doors").appendChild(btn)
+    })
+}
+
+function chooseDoor(correct) {
+    if (correct) {
+        document.getElementById("correct").play()
+        score += 10
+        passed++
+        document.getElementById("score").innerText = score
+
+        if (passed >= goal) {
+            winGame()
+        } else {
+            nextRound()
+        }
+    } else {
+        gameOver()
+    }
+}
+
+function gameOver() {
+    clearInterval(timer)
+    document.getElementById("wrong").play()
+    document.getElementById("gameoverSound").play()
+    document.getElementById("hud").style.display = "none"
+    document.getElementById("gameover").style.display = "block"
+    document.getElementById("finalScore").innerText = score
+}
+
+function winGame() {
+    clearInterval(timer)
+    document.getElementById("winSound").play()
+    document.getElementById("hud").style.display = "none"
+    document.getElementById("win").style.display = "block"
+    document.getElementById("winScore").innerText = score + " em " + time + "s"
+}
+
+function restart() {
+    location.reload()
+}
+</script>
+
+</body>
+</html>
