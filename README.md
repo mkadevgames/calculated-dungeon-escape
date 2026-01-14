@@ -51,6 +51,6 @@ Em breve mais screenshots!
 
 ## 🚀 Como Jogar
 
-1. Clone o repositório
+1. entre no site e jogue de graça
 ```bash
-git clone https://github.com/SEU_USUARIO/calculated-dungeon-escape.git
+cde.base44.app
